@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:nano",
+    "port": "COM3",
+    "sketch": "MSDHT22termo.ino",
+    "configuration": "cpu=atmega328"
+}
