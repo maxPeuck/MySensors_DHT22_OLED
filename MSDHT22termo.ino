@@ -15,7 +15,7 @@
 #include <DHT.h>
 #include <DHT_U.h>
 #include <Bounce2.h>
-#include <DaikinHeatpumpIR.h>
+//#include <DaikinHeatpumpIR.h>
 
 //screen data
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -84,10 +84,10 @@ int MODE_STATE;
 int VDIR_STATE;
 int HDIR_STATE;
 
-IRSenderPWM irSender(3); // IR led on Arduino digital pin 3, using Arduino PWM
+//IRSenderPWM irSender(3); // IR led on Arduino digital pin 3, using Arduino PWM
 
 //Change to your Heatpump
-HeatpumpIR *heatpumpIR = new DaikinHeatpumpIR();
+//HeatpumpIR *heatpumpIR = new DaikinHeatpumpIR();
 
 MyMessage msgHVACSetPointC(CHILD_ID_HVAC, V_HVAC_SETPOINT_COOL);
 MyMessage msgHVACSpeed(CHILD_ID_HVAC, V_HVAC_SPEED);
@@ -142,6 +142,10 @@ void setup()
   // After setting up the button, setup the Bounce instance :
   debouncerMoins.attach(buttonMoins);
   debouncerMoins.interval(5); // interval in ms
+
+  readDHT22();
+  sendValues();
+  displayValues();
 }
 
 void loop()
@@ -156,13 +160,15 @@ void loop()
 
   if ((valuePlus == HIGH) && (valuePreviousPlus == LOW))
   {
-    thermoval += .5;
+    if (!screenOff)
+      thermoval += .5;
     cpt_screen = 0;
     displayValues();
   }
   if ((valueMoins == HIGH) && (valuePreviousMoins == LOW))
   {
-    thermoval -= .5;
+    if (!screenOff)
+      thermoval -= .5;
     cpt_screen = 0;
     displayValues();
   }
@@ -171,21 +177,22 @@ void loop()
   valuePreviousMoins = valueMoins;
 
   wait(5);
-  cpt+=5;
-  cpt_screen +=5;
+  cpt += 5;
+  cpt_screen += 5;
 
   if ((cpt % 10000) == 0)
   {
     readDHT22();
 
-    //sendValues();
+    sendValues();
 
     // Sleep for a while to save energy
     //sleep(UPDATE_INTERVAL);
     //dht.begin();
   }
-  if(cpt_screen > 10000){
-    if(!screenOff)
+  if (cpt_screen > 10000)
+  {
+    if (!screenOff)
       switchOffscreen();
   }
 }
@@ -259,13 +266,14 @@ void displayValues(void)
   display.println(temperature);
 
   display.display();
-  
-  screenOff= false;
+
+  screenOff = false;
   //delay(2000);
 }
 
-void switchOffscreen(){
+void switchOffscreen()
+{
   display.clearDisplay();
   display.display();
-  screenOff= true;
+  screenOff = true;
 }
